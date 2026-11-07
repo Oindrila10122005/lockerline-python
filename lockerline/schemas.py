@@ -1,3 +1,6 @@
+"""Request and response models. Every response goes through one of these; bodies use Field constraints.
+"""
+
 from datetime import datetime, timezone
 from typing import Annotated, Literal
 
@@ -15,6 +18,7 @@ def _iso_z(dt: datetime) -> str:
 
 
 UtcZ = Annotated[datetime, PlainSerializer(_iso_z, return_type=str)]
+
 
 class DoorListItem(BaseModel):
     """One cell of the wall. A free door carries only no, size and state; a holding door adds its parcel and dwell."""
@@ -36,3 +40,25 @@ class DoorsOut(BaseModel):
     tower: str
     free: int = Field(description="How many of the doors in this answer (after the filters) are free")
     doors: list[DoorListItem]
+
+
+class DropIn(BaseModel):
+    size_class: SizeClass
+    flat: str = Field(min_length=1, max_length=8, pattern=r"^[0-9A-Za-z-]+$")
+
+
+class DropOut(BaseModel):
+    parcel_id: str
+    door: str
+    size_class: SizeClass
+    flat: str
+    dropped_at: UtcZ
+
+
+class ParcelOut(BaseModel):
+    parcel_id: str
+    state: Literal["holding", "collected"]
+    door: str
+    size_class: SizeClass
+    flat: str
+    dropped_at: UtcZ
